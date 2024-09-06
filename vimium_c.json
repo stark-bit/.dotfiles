@@ -1,0 +1,25 @@
+{
+	"name": "Vimium C",
+	"@time": "9/6/2024, 10:53:59 PM",
+	"time": 1725652439502,
+	"environment": {
+		"extension": "2.11.3",
+		"platform": "mac",
+		"chromium": 127
+	},
+	"keyLayout": 2,
+	"keyMappings": [
+		"#!no-check",
+		"# Insert your preferred key mappings here.",
+		"map t Vomnibar.activateTabSelection",
+		"map T visitPreviousTab",
+		"map gg scrollToTop",
+		"map G scrollToBottom",
+		"map D scrollPageUp",
+		"map q enterInsertMode",
+		"map M toggleMuteTab",
+		""
+	],
+	"linkHintCharacters": "wertyuiasdfghjklvmbn",
+	"vimSync": true
+}
