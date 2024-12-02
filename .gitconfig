@@ -1,12 +1,20 @@
 ## brew install git-delta
+[user]
+  name = Rei Kromulis
+  email = reinis.kromulis@ivendi.com
 [core]
-    pager = delta
+  pager = delta
+	autocrlf = false
 
 [interactive]
-    diffFilter = delta --color-only
+  diffFilter = delta --color-only
 
 [delta]
-    navigate = true    # use n and N to move between diff sections
+  navigate = true    # use n and N to move between diff sections
+  side-by-side = true
+  line-numbers = true
+  dark = true
+  file-style = "#000000 #ffffff"
 
     # delta detects terminal colors automatically; set one of these to disable auto-detection
     # dark = true
@@ -17,6 +25,8 @@
   diff   = delta
   reflog = delta
   show   = delta
+  fugitive   = delta
 [merge]
     conflictstyle = zdiff3
+
 
