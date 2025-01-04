@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+sudo dnf install fzf neovim git-delta tmux zsh zsh-autosuggestions zsh-syntax-highlighting luarocks
