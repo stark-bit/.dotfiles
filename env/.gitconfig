@@ -1,6 +1,6 @@
 ## brew install git-delta
 [user]
-  name = Rei Kromulis
+  name = Reinis Starks
   email = reinis.kromulis@ivendi.com
 [core]
   pager = delta
