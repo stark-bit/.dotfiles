@@ -1,14 +1,15 @@
 export XDG_CONFIG_HOME=$HOME/.config
 VIM="nvim"
 
-PERSONAL=$XDG_CONFIG_HOME/personal
-DEV_ENV=$HOME/github
-for i in `find -L $PERSONAL`; do
-    source $i
-done
+
+#PERSONAL=$XDG_CONFIG_HOME/personal
+#for i in `find -L $PERSONAL`; do
+#    source $i
+#done
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+export DEV_ENV="$HOME/github/personal/.dotfiles"
 export GIT_EDITOR=$VIM
 export DEV_ENV_HOME="$HOME/github/personal/.dotfiles"
 export VOLTA_HOME="$HOME/.volta"
