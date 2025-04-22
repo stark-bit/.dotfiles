@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+brew install lua fzf ripgrep git-delta
+gh repo clone stark-bit/nvim $HOME/nvim
+
+pushd $HOME/nvim &>dev/null
+  (
+    ./dev
+  )
+popd &>dev/null

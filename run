@@ -31,11 +31,26 @@ log() {
 
 log "RUN: env: $env -- grep: $grep"
 
-# runs_dir=`find $script_dir/runs -mindepth 1 -maxdepth 1 -executable`
 if [[ "$(uname)" == "Darwin" ]]; then
-    runs_dir=$(find "$script_dir/runs" -mindepth 1 -maxdepth 1 -type f -perm -111)
+    # macOS
+    runs_dir=$(find "$script_dir/runs/mac" -mindepth 1 -maxdepth 1 -type f -perm -111)
+elif [[ "$(uname)" == "Linux" ]]; then
+    # Linux
+    if command -v dnf >/dev/null 2>&1; then
+        # Fedora/RHEL-based
+        echo "Detected Fedora-based system (dnf available)"
+        runs_dir=$(find "$script_dir/runs/fedora" -mindepth 1 -maxdepth 1 -executable -type f)
+    elif command -v apt >/dev/null 2>&1; then
+        # Debian/Ubuntu-based
+        echo "Detected Debian-based system (apt available)"
+        runs_dir=$(find "$script_dir/runs/debian" -mindepth 1 -maxdepth 1 -executable -type f)
+    else
+        echo "Unsupported Linux distribution"
+        exit 1
+    fi
 else
-    runs_dir=$(find "$script_dir/runs" -mindepth 1 -maxdepth 1 -executable -type f)
+    echo "Unsupported operating system: $(uname)"
+    exit 1
 fi
 
 for s in $runs_dir; do
