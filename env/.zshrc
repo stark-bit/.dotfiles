@@ -1,4 +1,3 @@
-echo "new3"
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -103,15 +102,15 @@ source $ZSH/oh-my-zsh.sh
 source ~/.zsh_profile
 
 # bun completions
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+#[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # Bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+#export BUN_INSTALL="$HOME/.bun"
+#export PATH="$BUN_INSTALL/bin:$PATH"
 
 # pnpm
-export PNPM_HOME="$HOME/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
+#export PNPM_HOME="$HOME/.local/share/pnpm"
+#export PATH="$PNPM_HOME:$PATH"
 # pnpm end
 # Turso
-export PATH="$HOME/.turso:$PATH"
+#export PATH="$HOME/.turso:$PATH"

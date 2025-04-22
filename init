@@ -11,10 +11,12 @@ elif [[ "$(uname)" == "Linux" ]]; then
     # Linux
     if command -v dnf >/dev/null 2>&1; then
         # Fedora/RHEL-based
+        ./run zsh
         cp ./env/.zshrc ~/.zshrc
         cp ./env/.zsh_profile ~/.zsh_profile
     elif command -v apt >/dev/null 2>&1; then
         # Debian/Ubuntu-based
+        ./run zsh
         cp ./env/.zshrc ~/.zshrc
         cp ./env/.zsh_profile ~/.zsh_profile
     else
