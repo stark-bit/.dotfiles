@@ -1,8 +1,8 @@
 # dotfiles
 ```bash
-./init
-./dev-env --dry # Confirm DEV_ENV is $(pwd)
+./init # sets up location and PATH vars for scripts
+./dev-env --dry # Confirm DEV_ENV is set and things look ok
 ./dev-env
-/run --dry
-/run *
+/run --dry # Confirm things look ok
+/run * # Run everything
 ```
