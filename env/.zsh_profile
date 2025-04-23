@@ -48,3 +48,17 @@ addToPath $HOME/.local/personal
 # thanks gt
 alias gt='NODE_OPTIONS="--no-deprecation" gt'
 
+
+# shortcuts
+code () { VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;}
+
+
+loc() {
+    if [ -z "$1" ]; then
+        echo "Usage: loc <port_number>"
+    else
+        xdg-open "http://localhost:$1" &>/dev/null || open "http://localhost:$1"
+    fi
+}
+
+
