@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 sudo apt -y update
-sudo apt -y install git gh git-delte ripgrep xclip tldr shutter tmux
+sudo apt -y install git gh git-delta ripgrep xclip tldr shutter tmux
 
-git clone git@github.com:junegunn/fzf.git $HOME/personal/fzf
-$HOME/personal/fzf/install
+sudo git clone git@github.com:junegunn/fzf.git $HOME/personal/fzf
+bash $HOME/personal/fzf/install
