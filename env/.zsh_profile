@@ -36,12 +36,12 @@ addToPathFront() {
     fi
 }
 
+export PATH="$VOLTA_HOME/bin:$PATH"
 addToPathFront $HOME/.local/.npm-global/bin
 addToPathFront $HOME/.local/apps
 addToPathFront $HOME/.local/scripts
 addToPathFront $HOME/.local/bin
 addToPathFront $HOME/.local/npm/bin
-addToPathFront "$VOLTA_HOME/bin"
 addToPathFront $HOME/.local/apps/
 addToPath $HOME/.local/personal
 
