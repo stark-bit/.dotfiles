@@ -30,3 +30,9 @@
     conflictstyle = zdiff3
 
 
+[alias]
+  la = "!git config -l | grep alias | cut -c 7-" # List all active aliases
+  l1 = "!git log --pretty=format:'%C(yellow)%h%Cred%d %Creset%s%Cgreen [%an]%C(dim) %ad%Creset' --decorate --date=format:'%Y-%m-%d %H:%M:%S %z'"
+  l2 = "!git log --pretty=format:'%C(yellow)%h%Cred%d %Creset%s%Cgreen [%ad]%C(dim) %ad%Creset' --decorate --date=format:'%Y-%m-%d %H:%M:%S %z' --numstat"
+  l3 = log --graph --abbrev-commit --decorate --all --format=format:'%C(bold blue)%h%C(reset) - %C(dim white)%an%C(reset) %C(bold yellow)%d%C(reset)%n''%C(white)%s%C(reset)' --date=short
+  unstage = reset --soft HEAD^
