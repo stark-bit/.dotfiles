@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-echo "new4"
 
 switch_to() {
     if [[ -z $TMUX ]]; then
