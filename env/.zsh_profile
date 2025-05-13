@@ -13,6 +13,7 @@ dev_env() {
 
 bindkey -s ^f "tmux-sessionizer\n"
 bindkey -s ^n "nvim .\n"
+bindkey -s ^a "tmux a \n"
 
 
 catr() {
