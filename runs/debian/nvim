@@ -7,7 +7,6 @@ fi
 
 echo "version: \"$version\""
 
-# neovim btw
 if [ ! -d $HOME/neovim ]; then
     sudo git clone https://github.com/neovim/neovim.git $HOME/neovim
 fi

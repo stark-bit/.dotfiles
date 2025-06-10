@@ -1,27 +1,3 @@
 #!/usr/bin/env bash
 export DEV_ENV=$(pwd)
 
-if [[ "$(uname)" == "Darwin" ]]; then
-    # macOS
-    curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
-    cp ./env/.zshrc ~/.zshrc
-    cp ./env/.zsh_profile ~/.zsh_profile
-
-elif [[ "$(uname)" == "Linux" ]]; then
-    # Linux
-    if command -v dnf >/dev/null 2>&1; then
-        # Fedora/RHEL-based
-        cp ./env/.zshrc ~/.zshrc
-        cp ./env/.zsh_profile ~/.zsh_profile
-    elif command -v apt >/dev/null 2>&1; then
-        # Debian/Ubuntu-based
-        cp ./env/.zshrc ~/.zshrc
-        cp ./env/.zsh_profile ~/.zsh_profile
-    else
-        echo "Unsupported Linux distribution"
-        exit 1
-    fi
-else
-    echo "Unsupported operating system: $(uname)"
-    exit 1
-fi
