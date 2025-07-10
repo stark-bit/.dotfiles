@@ -1,3 +1,9 @@
 #!/usr/bin/env bash
 export DEV_ENV=$(pwd)
 
+
+if [[ "$(uname)" == "Darwin" ]]; then
+  # macOS
+  curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+fi
+
