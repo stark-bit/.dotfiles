@@ -1,8 +1,8 @@
 # Dotfiles
 
-These are my personal dotfiles for customizing my development environment.
+My personal dotfiles for customizing my development environment.
 
-The goal of this project is to be able to be up and running with my preferred development environment in 5 minutes or less.
+The goal:  Be up and running on a new system in 5 minutes or less
 
 ## Overview
 
