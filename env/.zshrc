@@ -1,3 +1,8 @@
+# improve zsh startup time, taken from - https://blog.jonlu.ca/posts/speeding-up-zsh
+DISABLE_AUTO_UPDATE="true"
+DISABLE_MAGIC_FUNCTIONS="true"
+DISABLE_COMPFIX="true"
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
