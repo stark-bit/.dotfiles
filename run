@@ -31,27 +31,37 @@ log() {
 
 log "RUN: env: $env -- grep: $grep"
 
-if [[ "$(uname)" == "Darwin" ]]; then
-    # macOS
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$script_dir/detect_os_and_run"
+
+
+mac() {
     runs_dir=$(find "$script_dir/runs/mac" -mindepth 1 -maxdepth 1 -type f -perm -111)
-elif [[ "$(uname)" == "Linux" ]]; then
-    # Linux
-    if command -v dnf >/dev/null 2>&1; then
-        # Fedora/RHEL-based
-        echo "Detected Fedora-based system (dnf available)"
-        runs_dir=$(find "$script_dir/runs/fedora" -mindepth 1 -maxdepth 1 -executable -type f)
-    elif command -v apt >/dev/null 2>&1; then
-        # Debian/Ubuntu-based
-        echo "Detected Debian-based system (apt available)"
-        runs_dir=$(find "$script_dir/runs/debian" -mindepth 1 -maxdepth 1 -executable -type f)
-    else
-        echo "Unsupported Linux distribution"
-        exit 1
-    fi
-else
-    echo "Unsupported operating system: $(uname)"
+}
+
+fedora() {
+    echo "Detected Fedora-based system (dnf available)"
+    runs_dir=$(find "$script_dir/runs/fedora" -mindepth 1 -maxdepth 1 -executable -type f)
+}
+
+
+debian() {
+  echo "Detected Debian-based system (apt available)"
+  runs_dir=$(find "$script_dir/runs/debian" -mindepth 1 -maxdepth 1 -executable -type f)
+}
+
+
+fallback() {
+    echo "OS not supported. Exiting."
     exit 1
-fi
+}
+
+detect_os_and_run \
+    --mac-func mac \
+    --fedora-func fedora \
+    --debian-func debian \
+    --fallback-func fallback
+
 
 for s in $runs_dir; do
     if echo "$s" | grep -vq "$grep"; then

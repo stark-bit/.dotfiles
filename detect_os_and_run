@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Function: detect_os_and_run
+# Named Arguments (flags):
+#   --mac-func     <function name>
+#   --fedora-func  <function name>
+#   --debian-func  <function name>
+#   --fallback-func <function name>
+
+detect_os_and_run() {
+    local mac_func=""
+    local fedora_func=""
+    local debian_func=""
+    local fallback_func=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --mac-func)
+                mac_func="$2"
+                shift 2
+                ;;
+            --fedora-func)
+                fedora_func="$2"
+                shift 2
+                ;;
+            --debian-func)
+                debian_func="$2"
+                shift 2
+                ;;
+            --fallback-func)
+                fallback_func="$2"
+                shift 2
+                ;;
+            *)
+                echo "Unknown flag: $1"
+                return 1
+                ;;
+        esac
+    done
+
+    case "$(uname)" in
+        Darwin)
+            echo "Detected macOS"
+            [[ -n "$mac_func" ]] && "$mac_func"
+            ;;
+        Linux)
+            if command -v dnf >/dev/null 2>&1; then
+                echo "Detected Fedora-based system"
+                [[ -n "$fedora_func" ]] && "$fedora_func"
+            elif command -v apt >/dev/null 2>&1; then
+                echo "Detected Debian-based system"
+                [[ -n "$debian_func" ]] && "$debian_func"
+            else
+                echo "Unsupported Linux distribution"
+                [[ -n "$fallback_func" ]] && "$fallback_func" || exit 1
+            fi
+            ;;
+        *)
+            echo "Unsupported operating system: $(uname)"
+            [[ -n "$fallback_func" ]] && "$fallback_func" || exit 1
+            ;;
+    esac
+}
+
