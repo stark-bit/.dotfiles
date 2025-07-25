@@ -1,0 +1,8 @@
+top:::Process viewer
+inxi -Fzxx:::System information
+journalctl -f:::Tail system log
+journalctl -b:::last boot system log
+sudo dnf upgrade --refresh:::Update fedora
+sudo dnf clean all:::clean cache
+sudo akmods --force --rebuild:::Rebuild modules like NVIDIA
+sudo depmod -a:::Re-index all kernel modules
