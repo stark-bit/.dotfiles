@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+dnf install neovim lua fzf ripgrep git-delta luarocks
+gh repo clone stark-bit/nvim $HOME/nvim
+
+pushd $HOME/nvim &> /dev/null
+  (
+    ./dev
+  )
+popd &> /dev/null
