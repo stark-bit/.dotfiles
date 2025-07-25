@@ -3,3 +3,4 @@ top:::Process viewer
 sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder:::Flush macOS DNS cache
 brew update && brew upgrade:::Update and upgrade Homebrew packages
 say 'Hello World from the terminal!':::Say something using macOS voice
+gh pr create -w:::Create a new PR and open PR browser window

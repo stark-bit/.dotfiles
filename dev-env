@@ -73,8 +73,6 @@ copy $DEV_ENV/dev-env $HOME/.local/scripts/dev-env
 copy $DEV_ENV/cl $HOME/.local/scripts/cl
 
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$script_dir/detect_os_and_run"
 
 mac() {
   copy $DEV_ENV/env/.cl-mac-commands $HOME/.cl-commands
@@ -91,6 +89,7 @@ fallback() {
     exit 1
 }
 
+source "$DEV_ENV/detect_os_and_run"
 detect_os_and_run \
   --mac-func mac \
   --fedora-func fedora \

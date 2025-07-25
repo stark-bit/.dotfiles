@@ -2,8 +2,11 @@
 export DEV_ENV=$(pwd)
 
 
-if [[ "$(uname)" == "Darwin" ]]; then
-  # macOS
+source "$DEV_ENV/detect_os_and_run"
+mac() {
   curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
-fi
+}
+
+detect_os_and_run \
+  --mac-func mac
 

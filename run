@@ -31,8 +31,6 @@ log() {
 
 log "RUN: env: $env -- grep: $grep"
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$script_dir/detect_os_and_run"
 
 
 mac() {
@@ -44,18 +42,17 @@ fedora() {
     runs_dir=$(find "$script_dir/runs/fedora" -mindepth 1 -maxdepth 1 -executable -type f)
 }
 
-
 debian() {
   echo "Detected Debian-based system (apt available)"
   runs_dir=$(find "$script_dir/runs/debian" -mindepth 1 -maxdepth 1 -executable -type f)
 }
-
 
 fallback() {
     echo "OS not supported. Exiting."
     exit 1
 }
 
+source "DEV_ENV/detect_os_and_run"
 detect_os_and_run \
     --mac-func mac \
     --fedora-func fedora \
