@@ -2,22 +2,46 @@
 
 COMMAND_FILE="$HOME/.cl-commands"
 
-# Check if the file exists
 if [[ ! -f "$COMMAND_FILE" ]]; then
   echo "Command file not found at $COMMAND_FILE"
   exit 1
 fi
 
-# Read and show commands via fzf
-selected=$(while IFS= read -r line; do
-  echo "$line"
-done < "$COMMAND_FILE" \
-| awk -F ':::' '{printf "%-60s # %s\n", $1, $2}' \
-| fzf --prompt="Select command: " --ansi)
+cl_run() {
+  selected=$(while IFS= read -r line; do
+    echo "$line"
+  done < "$COMMAND_FILE" \
+  | awk -F ':::' '{printf "%-60s # %s\n", $1, $2}' \
+  | fzf --prompt="Select command: " --ansi)
 
-# Extract and run selected command
-if [[ -n "$selected" ]]; then
-  cmd=$(echo "$selected" | cut -d'#' -f1 | sed 's/[[:space:]]*$//')
-  echo -e "\n👉 Running: $cmd\n"
-  eval "$cmd"
-fi
+  if [[ -n "$selected" ]]; then
+    cmd=$(echo "$selected" | cut -d'#' -f1 | sed 's/[[:space:]]*$//')
+    echo -e "\n Running: $cmd\n"
+    eval "$cmd"
+  fi
+}
+
+cl_add() {
+  read -p "Command: " cmd
+  if [[ -z "$cmd" ]]; then
+    echo "No command provided"
+    exit 1
+  fi
+  read -p "Description: " desc
+  if [[ -z "$desc" ]]; then
+    echo "No description provided"
+    exit 1
+  fi
+  echo "$cmd:::$desc" >> "$COMMAND_FILE"
+  echo "Added: $cmd ($desc)"
+}
+
+cl_edit() {
+  nvim "$COMMAND_FILE"
+}
+
+case "$1" in
+  add)  cl_add ;;
+  edit) cl_edit ;;
+  *)    cl_run ;;
+esac
