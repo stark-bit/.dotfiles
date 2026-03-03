@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 dry_run="0"
+warn_only="0"
 
 if [ -z "$XDG_CONFIG_HOME" ]; then
     echo "no xdg config hom"
@@ -16,7 +17,14 @@ if [[ $1 == "--dry" ]]; then
     dry_run="1"
 fi
 
+if [[ $1 == "--warn" ]]; then
+    warn_only="1"
+fi
+
 log() {
+    if [[ $warn_only == "1" ]]; then
+        return
+    fi
     if [[ $dry_run == "1" ]]; then
         echo "[DRY_RUN]: $1"
     else
@@ -24,9 +32,34 @@ log() {
     fi
 }
 
+warn_count=0
+
+warn_size() {
+    local src="$1"
+    local tgt="$2"
+    if [[ -f "$tgt" && -f "$src" ]]; then
+        local src_size=$(wc -c < "$src")
+        local tgt_size=$(wc -c < "$tgt")
+        if (( tgt_size > src_size )); then
+            local diff=$(( tgt_size - src_size ))
+            local src_short="${src#$DEV_ENV}"
+            warn_count=$(( warn_count + 1 ))
+            echo "[$warn_count] WARNING"
+            echo "  target: $tgt"
+            echo "  source: $src_short"
+            echo "  target is $diff bytes larger ($tgt_size vs $src_size bytes)"
+            echo "  will be overwritten with less content"
+            echo ""
+        fi
+    fi
+}
+
 log "env: $DEV_ENV"
 
 update_files() {
+    if [[ $warn_only == "1" ]]; then
+        return
+    fi
     log "copying over files from: $1"
     pushd $1 &> /dev/null
     (
@@ -50,7 +83,14 @@ update_files() {
 }
 
 copy() {
+    if [[ $warn_only == "1" ]]; then
+        warn_size "$1" "$2"
+        return
+    fi
     log "removing: $2"
+    if [[ $dry_run == "1" ]]; then
+        warn_size "$1" "$2"
+    fi
     if [[ $dry_run == "0" ]]; then
         rm $2
     fi
