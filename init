@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 export DEV_ENV=$(pwd)
 
-
 source "$DEV_ENV/detect_os_and_run"
+
 mac() {
   curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
 }

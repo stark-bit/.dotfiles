@@ -17,5 +17,6 @@ No symlinks, just a simple bash script deleting and copying files over.
 
 Run `init` before running `dev-env` or `run` scripts.
 Run `dev-env --dry` and `run --dry` to see a log of actions that will be performed
+Run `dev-env --warn` log warnings when target file has more content than the source
 
 
