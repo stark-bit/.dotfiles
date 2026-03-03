@@ -8,8 +8,10 @@ fi
 
 export DEV_ENV="$DEV_ENV"
 
+# flags
 grep=""
 dry_run="0"
+warn_only="0"
 
 while [[ $# -gt 0 ]]; do
     echo "ARG: \"$1\""
@@ -21,18 +23,11 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-log() {
-    if [[ $dry_run == "1" ]]; then
-        echo "[DRY_RUN]: $1"
-    else
-        echo "$1"
-    fi
-}
+# shared helpers
+source "$DEV_ENV/lib/log.sh"
+source "$DEV_ENV/lib/detect_os_and_run"
 
-log "RUN: env: $env -- grep: $grep"
-
-
-
+# functions
 mac() {
     runs_dir=$(find "$script_dir/runs/mac" -mindepth 1 -maxdepth 1 -type f -perm -111)
 }
@@ -52,13 +47,14 @@ fallback() {
     exit 1
 }
 
-source "DEV_ENV/detect_os_and_run"
+# execution
+log "RUN: env: $env -- grep: $grep"
+
 detect_os_and_run \
     --mac-func mac \
     --fedora-func fedora \
     --debian-func debian \
     --fallback-func fallback
-
 
 for s in $runs_dir; do
     if echo "$s" | grep -vq "$grep"; then
