@@ -13,15 +13,23 @@ if [ -z "$DEV_ENV" ]; then
 fi
 
 # flags
-dry_run="0"
-warn_only="0"
+force="0"
 
-if [[ $1 == "--dry" ]]; then
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f) force="1" ;;
+        *) echo "Unknown argument: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# safe by default: dry_run + warn unless -f
+if [[ $force == "0" ]]; then
     dry_run="1"
-fi
-
-if [[ $1 == "--warn" ]]; then
     warn_only="1"
+else
+    dry_run="0"
+    warn_only="0"
 fi
 
 # shared helpers
@@ -30,17 +38,23 @@ source "$DEV_ENV/lib/detect_os_and_run"
 
 # functions
 update_files() {
-    if [[ $warn_only == "1" ]]; then
-        return
-    fi
     log "copying over files from: $1"
     pushd $1 &> /dev/null
     (
         configs=`find . -mindepth 1 -maxdepth 1 -type d`
         for c in $configs; do
             directory=${2%/}/${c#./}
-            log "    removing: rm -rf $directory"
 
+            if [[ $warn_only == "1" ]]; then
+                # walk files in source dir, warn_size against target counterparts
+                find ./$c -type f | while read -r f; do
+                    src_file="$1/${f#./}"
+                    tgt_file="${2%/}/${f#./}"
+                    warn_size "$src_file" "$tgt_file"
+                done
+            fi
+
+            log "    removing: rm -rf $directory"
             if [[ $dry_run == "0" ]]; then
                 rm -rf $directory
             fi
@@ -56,10 +70,6 @@ update_files() {
 }
 
 copy() {
-    if [[ $warn_only == "1" ]]; then
-        warn_size "$1" "$2"
-        return
-    fi
     log "removing: $2"
     if [[ $dry_run == "1" ]]; then
         warn_size "$1" "$2"
@@ -75,9 +85,6 @@ copy() {
 
 link() {
     log "symlinking: $1 -> $2"
-    if [[ $warn_only == "1" ]]; then
-        return
-    fi
     if [[ $dry_run == "0" ]]; then
         ln -sf "$1" "$2"
     fi

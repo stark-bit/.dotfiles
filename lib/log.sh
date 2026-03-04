@@ -7,9 +7,6 @@
 warn_count=0
 
 log() {
-    if [[ $warn_only == "1" ]]; then
-        return
-    fi
     if [[ $dry_run == "1" ]]; then
         echo "[DRY_RUN]: $1"
     else
