@@ -20,15 +20,25 @@ warn_size() {
     if [[ -f "$tgt" && -f "$src" ]]; then
         local src_size=$(wc -c < "$src")
         local tgt_size=$(wc -c < "$tgt")
-        if (( tgt_size > src_size )); then
-            local diff=$(( tgt_size - src_size ))
-            local src_short="${src#$DEV_ENV}"
+        if (( src_size != tgt_size )); then
+            local name=$(basename "$src")
+            local tgt_short="${tgt/#$HOME/~}"
+            local diff
+            local verb
+            if (( src_size > tgt_size )); then
+                diff=$(( src_size - tgt_size ))
+                verb="GAIN"
+            else
+                diff=$(( tgt_size - src_size ))
+                verb="LOSE"
+            fi
+            local dir_label="pushing"
+            if [[ $direction == "pull" ]]; then
+                dir_label="pulling"
+            fi
             warn_count=$(( warn_count + 1 ))
-            echo "[$warn_count] WARNING"
-            echo "  target: $tgt"
-            echo "  source: $src_short"
-            echo "  target is $diff bytes larger ($tgt_size vs $src_size bytes)"
-            echo "  will be overwritten with less content"
+            echo "[$warn_count] WARNING ($dir_label) $name -- will $verb $diff bytes"
+            echo "  target: $tgt_short"
             echo ""
         fi
     fi

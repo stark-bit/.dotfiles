@@ -14,9 +14,11 @@ fi
 
 # flags
 force="0"
+direction="push"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        pull) direction="pull" ;;
         -f) force="1" ;;
         *) echo "Unknown argument: $1"; exit 1 ;;
     esac
@@ -37,31 +39,74 @@ source "$DEV_ENV/lib/log.sh"
 source "$DEV_ENV/lib/detect_os_and_run"
 
 # functions
+# $1 = repo dir, $2 = home dir (always in this order)
 update_files() {
-    log "copying over files from: $1"
-    pushd $1 &> /dev/null
+    local repo_dir="$1"
+    local home_dir="$2"
+
+    if [[ $direction == "pull" ]]; then
+        log "pulling files from: $home_dir -> $repo_dir"
+    else
+        log "pushing files from: $repo_dir -> $home_dir"
+    fi
+
+    # always iterate repo dir to determine which dirs to sync
+    pushd $repo_dir &> /dev/null
     (
         configs=`find . -mindepth 1 -maxdepth 1 -type d`
         for c in $configs; do
-            directory=${2%/}/${c#./}
+            local repo_path="${repo_dir%/}/${c#./}"
+            local home_path="${home_dir%/}/${c#./}"
 
-            if [[ $warn_only == "1" ]]; then
-                # walk files in source dir, warn_size against target counterparts
+            if [[ $direction == "pull" ]]; then
+                if [[ ! -d "$home_path" ]]; then
+                    log "    SKIP: $home_path does not exist"
+                    continue
+                fi
+
+                # pull: copy only files that exist in repo, not the whole home dir
                 find ./$c -type f | while read -r f; do
-                    src_file="$1/${f#./}"
-                    tgt_file="${2%/}/${f#./}"
-                    warn_size "$src_file" "$tgt_file"
+                    local rel="${f#./$c/}"
+                    local src_file="${home_path%/}/$rel"
+                    local tgt_file="${repo_path%/}/$rel"
+
+                    if [[ ! -f "$src_file" ]]; then
+                        log "    SKIP: $src_file does not exist"
+                        continue
+                    fi
+
+                    if [[ $warn_only == "1" ]]; then
+                        warn_size "$src_file" "$tgt_file"
+                    fi
+
+                    log "    removing: $tgt_file"
+                    if [[ $dry_run == "0" ]]; then
+                        rm -f "$tgt_file"
+                    fi
+
+                    log "    copying: $src_file -> $tgt_file"
+                    if [[ $dry_run == "0" ]]; then
+                        cp "$src_file" "$tgt_file"
+                    fi
                 done
-            fi
+            else
+                if [[ $warn_only == "1" ]]; then
+                    find ./$c -type f | while read -r f; do
+                        local src_file="${repo_path%/}/${f#./$c/}"
+                        local tgt_file="${home_path%/}/${f#./$c/}"
+                        warn_size "$src_file" "$tgt_file"
+                    done
+                fi
 
-            log "    removing: rm -rf $directory"
-            if [[ $dry_run == "0" ]]; then
-                rm -rf $directory
-            fi
+                log "    removing: rm -rf $home_path"
+                if [[ $dry_run == "0" ]]; then
+                    rm -rf "$home_path"
+                fi
 
-            log "    copying env: cp $c $2"
-            if [[ $dry_run == "0" ]]; then
-                cp -r ./$c $2
+                log "    copying: cp -r $repo_path -> $home_path"
+                if [[ $dry_run == "0" ]]; then
+                    cp -r "$repo_path" "$home_path"
+                fi
             fi
         done
 
@@ -69,17 +114,36 @@ update_files() {
     popd &> /dev/null
 }
 
+# $1 = repo file, $2 = home file (always in this order)
 copy() {
-    log "removing: $2"
+    local repo_file="$1"
+    local home_file="$2"
+
+    if [[ $direction == "pull" ]]; then
+        local src="$home_file"
+        local tgt="$repo_file"
+    else
+        local src="$repo_file"
+        local tgt="$home_file"
+    fi
+
+    if [[ ! -f "$src" ]]; then
+        log "SKIP: source $src does not exist"
+        return
+    fi
+
     if [[ $dry_run == "1" ]]; then
-        warn_size "$1" "$2"
+        warn_size "$src" "$tgt"
     fi
+
+    log "removing: $tgt"
     if [[ $dry_run == "0" ]]; then
-        rm $2
+        rm -f "$tgt"
     fi
-    log "copying: $1 to $2"
+
+    log "copying: $src -> $tgt"
     if [[ $dry_run == "0" ]]; then
-        cp $1 $2
+        cp "$src" "$tgt"
     fi
 }
 
@@ -106,6 +170,7 @@ fallback() {
 
 # execution
 log "env: $DEV_ENV"
+log "direction: $direction"
 
 update_files $DEV_ENV/env/.config $XDG_CONFIG_HOME
 update_files $DEV_ENV/env/.local $HOME/.local
@@ -116,11 +181,16 @@ copy $DEV_ENV/env/.vimrc $HOME/.vimrc
 copy $DEV_ENV/env/.gitconfig $HOME/.gitconfig
 copy $DEV_ENV/env/.tmux.conf $HOME/.tmux.conf
 
-copy $DEV_ENV/dev-env $HOME/.local/scripts/dev-env
-copy $DEV_ENV/cl $HOME/.local/scripts/cl
+if [[ $direction == "push" ]]; then
+    copy $DEV_ENV/dev-env $HOME/.local/scripts/dev-env
+    copy $DEV_ENV/cl $HOME/.local/scripts/cl
 
-detect_os_and_run \
-  --mac-func mac \
-  --fedora-func fedora \
-  --debian-func debian \
-  --fallback-func fallback
+    detect_os_and_run \
+      --mac-func mac \
+      --fedora-func fedora \
+      --debian-func debian \
+      --fallback-func fallback
+else
+    log "skipping dev-env and cl self-copy (only relevant for push)"
+    log "skipping .cl-commands (already symlinked to repo)"
+fi
