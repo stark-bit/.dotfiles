@@ -15,11 +15,13 @@ fi
 # flags
 force="0"
 direction="push"
+diff_mode="0"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         pull) direction="pull" ;;
         -f) force="1" ;;
+        --diff) diff_mode="1" ;;
         *) echo "Unknown argument: $1"; exit 1 ;;
     esac
     shift
@@ -37,6 +39,49 @@ fi
 # shared helpers
 source "$DEV_ENV/lib/log.sh"
 source "$DEV_ENV/lib/detect_os_and_run"
+
+# diff mode: show diffs only, then exit
+if [[ $diff_mode == "1" ]]; then
+    diff_files() {
+        local repo_dir="$1"
+        local home_dir="$2"
+
+        pushd "$repo_dir" &> /dev/null
+        find . -type f | while read -r f; do
+            rel="${f#./}"
+            if [[ $direction == "pull" ]]; then
+                src="${home_dir%/}/$rel"
+                tgt="${repo_dir%/}/$rel"
+            else
+                src="${repo_dir%/}/$rel"
+                tgt="${home_dir%/}/$rel"
+            fi
+            show_diff "$src" "$tgt"
+        done
+        popd &> /dev/null
+    }
+
+    diff_file() {
+        local repo_file="$1"
+        local home_file="$2"
+        if [[ $direction == "pull" ]]; then
+            show_diff "$home_file" "$repo_file"
+        else
+            show_diff "$repo_file" "$home_file"
+        fi
+    }
+
+    diff_files "$DEV_ENV/env/.config" "$XDG_CONFIG_HOME"
+    diff_files "$DEV_ENV/env/.local" "$HOME/.local"
+
+    diff_file "$DEV_ENV/env/.zsh_profile" "$HOME/.zsh_profile"
+    diff_file "$DEV_ENV/env/.zshrc" "$HOME/.zshrc"
+    diff_file "$DEV_ENV/env/.vimrc" "$HOME/.vimrc"
+    diff_file "$DEV_ENV/env/.gitconfig" "$HOME/.gitconfig"
+    diff_file "$DEV_ENV/env/.tmux.conf" "$HOME/.tmux.conf"
+
+    exit 0
+fi
 
 # functions
 # $1 = repo dir, $2 = home dir (always in this order)

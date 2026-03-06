@@ -43,3 +43,20 @@ warn_size() {
         fi
     fi
 }
+
+show_diff() {
+    local src="$1"
+    local tgt="$2"
+    if [[ -f "$tgt" && -f "$src" ]]; then
+        local src_size=$(wc -c < "$src")
+        local tgt_size=$(wc -c < "$tgt")
+        if (( src_size != tgt_size )); then
+            local name=$(basename "$src")
+            echo "###################################################"
+            echo "######### $name"
+            echo "###################################################"
+            diff -U0 --color "$tgt" "$src"
+            echo ""
+        fi
+    fi
+}
