@@ -16,13 +16,19 @@ cl_run() {
 
   if [[ -n "$selected" ]]; then
     cmd=$(echo "$selected" | cut -d'#' -f1 | sed 's/[[:space:]]*$//')
+    
+    if [[ "$cmd" == *"{}"* ]]; then
+      read -e -p "Argument: " arg
+      cmd="${cmd//\{\}/$arg}"
+    fi
+    
     echo -e "\n Running: $cmd\n"
     eval "$cmd"
   fi
 }
 
 cl_add() {
-  read -p "Command: " cmd
+  read -p "Command (use {} for argument): " cmd
   if [[ -z "$cmd" ]]; then
     echo "No command provided"
     exit 1
