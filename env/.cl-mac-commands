@@ -4,3 +4,5 @@ sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder:::Flush macOS DNS 
 brew update && brew upgrade:::Update and upgrade Homebrew packages
 say 'Hello World from the terminal!':::Say something using macOS voice
 gh pr create -w:::Create a new PR and open PR browser window
+opencode web < /dev/null > /dev/null 2>&1 &:::opencode webui background process
+jira issue list -a"$(jira me)" -s~Done -s~"Closed not required" -s~"Closed - May Revist Later":::Jira all my not done tickets
