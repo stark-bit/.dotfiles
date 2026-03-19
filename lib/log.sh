@@ -22,7 +22,7 @@ warn_size() {
         local tgt_size=$(wc -c < "$tgt")
         if (( src_size != tgt_size )); then
             local name=$(basename "$src")
-            local tgt_short="${tgt/#$HOME/~}"
+            local tgt_short="~${tgt#$HOME}"
             local diff
             local verb
             if (( src_size > tgt_size )); then

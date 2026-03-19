@@ -47,26 +47,82 @@ if [[ $diff_mode == "1" ]]; then
         local home_dir="$2"
 
         pushd "$repo_dir" &> /dev/null
-        find . -type f | while read -r f; do
-            rel="${f#./}"
-            if [[ $direction == "pull" ]]; then
-                src="${home_dir%/}/$rel"
-                tgt="${repo_dir%/}/$rel"
-            else
-                src="${repo_dir%/}/$rel"
-                tgt="${home_dir%/}/$rel"
+
+        # iterate top-level subdirs (mirrors update_files logic)
+        local configs=$(find . -mindepth 1 -maxdepth 1 -type d)
+        for c in $configs; do
+            local repo_path="${repo_dir%/}/${c#./}"
+            local home_path="${home_dir%/}/${c#./}"
+
+            if [[ ! -d "$home_path" ]]; then
+                continue
             fi
-            show_diff "$src" "$tgt"
+
+            # content diffs for files tracked in repo
+            find ./$c -type f | while read -r f; do
+                local rel="${f#./$c/}"
+                local repo_file="${repo_path%/}/$rel"
+                local home_file="${home_path%/}/$rel"
+
+                # detect files that exist in repo but not in home
+                if [[ ! -f "$home_file" ]]; then
+                    local short="~${home_file#$HOME}"
+                    if [[ $direction == "pull" ]]; then
+                        echo "SKIP (no home file to pull): $short"
+                    else
+                        echo "NEW (will be CREATED on push): $short"
+                    fi
+                    continue
+                fi
+
+                if [[ $direction == "pull" ]]; then
+                    show_diff "$home_file" "$repo_file"
+                else
+                    show_diff "$repo_file" "$home_file"
+                fi
+            done
+
+            # orphan detection: home files that don't exist in repo
+            # only relevant for push (push does rm -rf + cp -r per subdir)
+            if [[ $direction == "push" ]]; then
+                pushd "$home_path" &> /dev/null
+                find . -type f | while read -r f; do
+                    local rel="${f#./}"
+                    local repo_file="${repo_path%/}/$rel"
+                    local base=$(basename "$rel")
+                    if [[ $base == "dev-env" || $base == "cl" ]]; then
+                        continue
+                    fi
+                    if [[ ! -f "$repo_file" ]]; then
+                        local home_file="${home_path%/}/$rel"
+                        local short="~${home_file#$HOME}"
+                        echo "ORPHAN (will be DELETED on push): $short"
+                    fi
+                done
+                popd &> /dev/null
+            fi
         done
+
         popd &> /dev/null
     }
 
     diff_file() {
         local repo_file="$1"
         local home_file="$2"
+
         if [[ $direction == "pull" ]]; then
+            if [[ ! -f "$home_file" ]]; then
+                local short="~${home_file#$HOME}"
+                echo "SKIP (no home file to pull): $short"
+                return
+            fi
             show_diff "$home_file" "$repo_file"
         else
+            if [[ ! -f "$home_file" ]]; then
+                local short="~${home_file#$HOME}"
+                echo "NEW (will be CREATED on push): $short"
+                return
+            fi
             show_diff "$repo_file" "$home_file"
         fi
     }
