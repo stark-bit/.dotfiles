@@ -36,7 +36,7 @@ export const NotifyPlugin = async () => {
       if (event.type === "session.idle") {
         const elapsed = busySince ? Date.now() - busySince : 0
         busySince = null
-        if (elapsed > 10_000) {
+        if (elapsed > 30_000) {
           play(idleSound)
         }
       }
