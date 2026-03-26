@@ -86,7 +86,7 @@ if [[ $diff_mode == "1" ]]; then
             # only relevant for push (push does rm -rf + cp -r per subdir)
             if [[ $direction == "push" ]]; then
                 pushd "$home_path" &> /dev/null
-                find . -type f | while read -r f; do
+                find . -type f -not -path "*/node_modules/*" | while read -r f; do
                     local rel="${f#./}"
                     local repo_file="${repo_path%/}/$rel"
                     local base=$(basename "$rel")
