@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Usage: pluck <dir-name> <destination> <repo-url>
+
+USAGE="Usage: pluck <dir-name> <repo-url> [destination]"
+
+# ── Validate arguments ────────────────────────────────────────────────────────
+if [[ $# -lt 2 || $# -gt 3 ]]; then
+  echo "Error: expected 2 or 3 arguments."
+  echo "$USAGE"
+  exit 1
+fi
+
+DIR_NAME="$1"
+REPO_URL="$2"
+DESTINATION="${3:-.}"
+DESTINATION="${DESTINATION%/}"
+
+# ── Clone into a temp directory ───────────────────────────────────────────────
+TMP_DIR="$(mktemp -d /tmp/pluck-XXXXXX)"
+
+cleanup() {
+  rm -rf "$TMP_DIR"
+}
+trap cleanup EXIT
+
+echo "Cloning $REPO_URL..."
+if ! git clone --quiet "$REPO_URL" "$TMP_DIR" 2>&1; then
+  echo "Error: failed to clone repository '$REPO_URL'."
+  exit 1
+fi
+
+# ── Search for matching directories ──────────────────────────────────────────
+MATCHES=()
+while IFS= read -r line; do
+  MATCHES+=("$line")
+done < <(find "$TMP_DIR" -type d -name "$DIR_NAME" | sed "s|$TMP_DIR/||")
+
+if [[ ${#MATCHES[@]} -eq 0 ]]; then
+  echo "Error: no directory named '$DIR_NAME' found in the repository."
+  exit 1
+fi
+
+# ── Pick a match ─────────────────────────────────────────────────────────────
+if [[ ${#MATCHES[@]} -eq 1 ]]; then
+  SELECTED="${MATCHES[0]}"
+else
+  echo "Multiple directories named '$DIR_NAME' found:"
+  echo ""
+  for i in "${!MATCHES[@]}"; do
+    echo "  [$((i + 1))] ${MATCHES[$i]}"
+  done
+  echo ""
+
+  while true; do
+    read -rp "Pick one [1-${#MATCHES[@]}]: " PICK
+    if [[ "$PICK" =~ ^[0-9]+$ ]] && (( PICK >= 1 && PICK <= ${#MATCHES[@]} )); then
+      SELECTED="${MATCHES[$((PICK - 1))]}"
+      break
+    else
+      echo "Invalid choice. Enter a number between 1 and ${#MATCHES[@]}."
+    fi
+  done
+fi
+
+# ── Check destination doesn't exist ──────────────────────────────────────────
+FINAL_PATH="$DESTINATION/$(basename "$SELECTED")"
+if [[ -e "$FINAL_PATH" ]]; then
+  echo "Error: '$FINAL_PATH' already exists. Remove it first."
+  exit 1
+fi
+
+# ── Copy the directory ────────────────────────────────────────────────────────
+echo "Copying '$SELECTED' to '$FINAL_PATH'..."
+cp -r "$TMP_DIR/$SELECTED" "$FINAL_PATH"
+
+echo "Done! '$DIR_NAME' copied to '$FINAL_PATH'."
+
