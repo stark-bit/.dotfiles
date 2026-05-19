@@ -5,7 +5,6 @@ VIM="nvim"
 
 export DEV_ENV="$HOME/.dotfiles"
 export GIT_EDITOR=$VIM
-export VOLTA_HOME="$HOME/.volta"
 export VISUAL=nvim
 
 dev_env() {
@@ -37,7 +36,8 @@ addToPathFront() {
     fi
 }
 
-export PATH="$VOLTA_HOME/bin:$PATH"
+addToPathFront $HOME/Library/pnpm
+export PNPM_HOME="$HOME/Library/pnpm"
 addToPathFront $HOME/.local/.npm-global/bin
 addToPathFront $HOME/.local/apps
 addToPathFront $HOME/.local/scripts
