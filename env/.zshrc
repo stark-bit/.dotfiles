@@ -115,12 +115,16 @@ source ~/.zsh_env
 #export BUN_INSTALL="$HOME/.bun"
 #export PATH="$BUN_INSTALL/bin:$PATH"
 
-# pnpm
-#export PNPM_HOME="$HOME/.local/share/pnpm"
-#export PATH="$PNPM_HOME:$PATH"
-# pnpm end
 # Turso
 #export PATH="$HOME/.turso:$PATH"
+
+# pnpm
+export PNPM_HOME="/Users/iv0700/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
 
 # wrapper for fzf cd commands
 cl() {
