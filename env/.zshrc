@@ -121,3 +121,8 @@ source ~/.zsh_env
 # pnpm end
 # Turso
 #export PATH="$HOME/.turso:$PATH"
+
+# wrapper for fzf cd commands
+cl() {
+  source ~/.local/scripts/cl "$@"
+}

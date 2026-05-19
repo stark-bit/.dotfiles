@@ -16,13 +16,13 @@ cl_run() {
 
   if [[ -n "$selected" ]]; then
     cmd=$(echo "$selected" | cut -d'#' -f1 | sed 's/[[:space:]]*$//')
-    
+
     if [[ "$cmd" == *"{}"* ]]; then
       read -e -p "Argument: " arg
       cmd="${cmd//\{\}/$arg}"
     fi
-    
-    echo -e "\n Running: $cmd\n"
+
+    echo -e "\n ⚡ Running: $cmd\n"
     eval "$cmd"
   fi
 }

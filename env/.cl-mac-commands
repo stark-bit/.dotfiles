@@ -6,3 +6,5 @@ say 'Hello World from the terminal!':::Say something using macOS voice
 gh pr create -w:::Create a new PR and open PR browser window
 opencode web < /dev/null > /dev/null 2>&1 &:::opencode webui background process
 jira issue list -a"$(jira me)" -s~Done -s~"Closed not required" -s~"Closed - May Revist Later":::Jira all my not done tickets
+cd "$(find . -type d | fzf)":::cd from local
+cd "$(find ~ -maxdepth 3 -type d | fzf)":::cd from home

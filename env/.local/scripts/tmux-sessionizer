@@ -24,7 +24,7 @@ if [[ $# -eq 1 ]]; then
     selected=$1
 else
   selected=$(\
-        { find ~/github/personal ~/github ~/github/playground ~/github/vim_ -mindepth 1 -maxdepth 1 -type d; echo ~/.dotfiles; echo ~/nvim; echo ~/.obsidian-settings; echo ~/.pi; } \
+        { find ~/github/personal ~/github ~/github/playground ~/github/vim_ -mindepth 1 -maxdepth 1 -type d; echo ~/.dotfiles; echo ~/nvim; echo ~/nvim; echo ~/.pi; } \
         | fzf)
 fi
 
