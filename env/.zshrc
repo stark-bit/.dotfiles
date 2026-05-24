@@ -130,3 +130,4 @@ esac
 cl() {
   source ~/.local/scripts/cl "$@"
 }
+eval "$(mise activate zsh)"
