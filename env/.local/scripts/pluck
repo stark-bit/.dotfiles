@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-# Usage: pluck <dir-name> <destination> <repo-url>
+# Usage: pluck <repo-url> <dir-name> [destination]
 
-USAGE="Usage: pluck <dir-name> <repo-url> [destination]"
+USAGE="Usage: pluck <repo-url> <dir-name> [destination]"
 
 # ── Validate arguments ────────────────────────────────────────────────────────
 if [[ $# -lt 2 || $# -gt 3 ]]; then
@@ -13,8 +13,8 @@ if [[ $# -lt 2 || $# -gt 3 ]]; then
   exit 1
 fi
 
-DIR_NAME="$1"
-REPO_URL="$2"
+REPO_URL="$1"
+DIR_NAME="$2"
 DESTINATION="${3:-.}"
 DESTINATION="${DESTINATION%/}"
 

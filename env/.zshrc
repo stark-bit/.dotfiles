@@ -131,3 +131,12 @@ cl() {
   source ~/.local/scripts/cl "$@"
 }
 eval "$(mise activate zsh)"
+
+# lean-ctx shell hook — begin
+if [ -f "/Users/iv0700/.config/lean-ctx/shell-hook.zsh" ]; then
+. "/Users/iv0700/.config/lean-ctx/shell-hook.zsh"
+fi
+# lean-ctx shell hook — end
+
+
+
