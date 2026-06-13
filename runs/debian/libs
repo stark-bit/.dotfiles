@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 sudo apt -y update
-sudo apt -y install curl git gh git-delta fzf ripgrep xclip shutter tmux lazygit
+sudo apt -y install curl git gh git-delta fd-find fzf ripgrep xclip shutter tmux lazygit
 
