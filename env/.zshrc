@@ -128,7 +128,7 @@ esac
 
 # wrapper for fzf cd commands
 cl() {
-  source ~/.local/scripts/cl "$@"
+  bash ~/.local/scripts/cl "$@"
 }
 eval "$(mise activate zsh)"
 
