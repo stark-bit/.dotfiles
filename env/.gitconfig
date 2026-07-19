@@ -1,4 +1,8 @@
 ## brew install git-delta
+# [user]
+#   name =
+#   email =
+#   signingkey =
 [include]
    path = ./.gitconfig_priv
 
