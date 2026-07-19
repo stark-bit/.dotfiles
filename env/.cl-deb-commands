@@ -1,1 +1,4 @@
 sudo lsof -iTCP -sTCP:LISTEN -P -n | awk 'NR>1 {split($9,a,":"); print $1, a[length(a)]}' | sort -u | while read proc port; do if [[ "$proc" == "docker-pr" ]]; then cname=$(docker ps --format '{{.Names}} {{.Ports}}' | awk -v p=":$port->" '$0 ~ p {print $1; exit}'); if [ -n "$cname" ]; then echo "$port $cname (docker)"; else echo "$port $proc"; fi; else echo "$port $proc"; fi; done | sort -n -k1,1:::show taken up ports
+docker stats --no-stream  --format "table {{.Name}}t{{.Container}}t{{.CPUPerc}}t{{.MemUsage}}" | sort -k 4 -h:::Docker stats by memory
+journalctl -f:::tail journal
+openssl rand -base64 32:::generate base64 crypto key
