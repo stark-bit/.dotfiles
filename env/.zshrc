@@ -20,6 +20,8 @@ case ":$PATH:" in
 esac
 # pnpm end
 
+cap() { CI=1 "$@" < /dev/null 2>&1 | tee out.log; }
+
 # wrapper for fzf cd commands
 cl() {
   bash ~/.local/scripts/cl "$@"
