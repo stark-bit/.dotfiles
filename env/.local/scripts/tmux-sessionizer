@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+window_mode=${TMUX_PROJECT_WINDOW:-false}
+
 switch_to() {
     if [[ -z $TMUX ]]; then
         tmux attach-session -t $1
@@ -34,6 +36,20 @@ if [[ -z $selected ]]; then
 fi
 
 selected_name=$(basename "$selected" | tr . _)
+
+if $window_mode; then
+    tmux rename-window -t "$TMUX_PANE" "$(basename "$selected")"
+    cd "$selected" || exit 1
+
+    if [[ -f .tmux-sessionizer ]]; then
+        exec /bin/zsh -ic 'source "$1"; exec /bin/zsh -l' zsh "$PWD/.tmux-sessionizer"
+    elif [[ -f $HOME/scripts/.tmux-sessionizer ]]; then
+        exec /bin/zsh -ic 'source "$1"; exec /bin/zsh -l' zsh "$HOME/scripts/.tmux-sessionizer"
+    else
+        exec /bin/zsh -l
+    fi
+fi
+
 tmux_running=$(pgrep tmux)
 
 if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
