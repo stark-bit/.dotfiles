@@ -269,7 +269,7 @@ keyboard_layout:
 keymaps:
 - entries:
     back click: null
-    back mouse button: W
+    back mouse button: Q
     back mouse button (w/o overlay): null
     close UI element: Escape
     cycle click count: null
@@ -285,11 +285,9 @@ keymaps:
     execute mouse move:
     - OptionLeft tap
     - ShiftLeft tap
-    exit free mode:
-    - Escape
-    - ControlLeft tap
+    exit free mode: Escape
     forward click: null
-    forward mouse button: Q
+    forward mouse button: W
     forward mouse button (w/o overlay): null
     hide overlay:
     - ControlLeft tap
@@ -300,10 +298,10 @@ keymaps:
     hold for middle button: null
     hold for move: OptionLeft
     hold for right button: CommandRight
-    hold for speed decrease: S
+    hold for speed decrease: m
     hold for speed increase:
-    - A
-    - F
+    - e
+    - i
     increase overlay opacity: ArrowUp
     jump to bottom: null
     jump to left edge: null
@@ -312,18 +310,18 @@ keymaps:
     left mouse button: Space
     left mouse button (w/o overlay): null
     middle click: null
-    middle mouse button: E
+    middle mouse button: L
     middle mouse button (w/o overlay): null
-    move down: J
-    move left: H
-    move right: L
-    move up: K
+    move down: ArrowDown
+    move left: ArrowLeft
+    move right: ArrowRight
+    move up: ArrowUp
     release hold/drag: Escape
     repeat last mouse action: null
     right click: Enter
     right mouse button: R
     right mouse button (w/o overlay): null
-    show overlay: ControlLeft tap
+    show overlay: null
     subgrid nudge down:
     - D
     - K
@@ -338,11 +336,11 @@ keymaps:
     - I
     switch monitor left: ShiftLeft tap
     switch monitor right: ShiftRight tap
-    toggle app enabled: CommandRight double tap
+    toggle app enabled: Insert triple tap
     toggle continuous mode: null
     toggle continuous mode until closed: '1'
-    toggle free mode: OptionLeft tap
-    toggle overlay: null
+    toggle free mode: OptionLeft double tap
+    toggle overlay: ControlLeft double tap
     toggle overlay lock: null
     undo last key: Backspace
     wheel down: D
@@ -359,10 +357,10 @@ keymaps:
     wheel step right large: null
     wheel step up: null
     wheel step up large: null
-    wheel up: G
+    wheel up: u
     wheel up fast: null
   name: mac
-monitor_assignment_mode: auto
+monitor_assignment_mode: single
 name: ''
 style_configs:
 - always_on_subgrid_rgba:
@@ -447,4 +445,5 @@ style_configs:
   - 0.06
   - 1.0
   text_y_offset: 0.0
-  window_opacity: 1.0
+  window_opacity: 0.9
+
