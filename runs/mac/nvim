@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-brew install lua fzf ripgrep git-delta
+brew install neovim tree-sitter-cli lua fzf ripgrep git-delta
 gh repo clone stark-bit/nvim $HOME/nvim
 
 pushd $HOME/nvim &> /dev/null

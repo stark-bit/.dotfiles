@@ -104,6 +104,8 @@ Creates new session if needed, switches if exists. Supports `.tmux-sessionizer` 
 
 ## Dependencies
 
+- `neovim` - text editor
+- `tree-sitter-cli` - Treesitter parser builds
 - `fzf` - fuzzy finding
 - `tmux` - terminal multiplexer
 - `git-delta` - better diffs
