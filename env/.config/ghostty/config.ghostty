@@ -1,0 +1,20 @@
+# Global summon
+keybind = global:option+space=toggle_quick_terminal
+keybind = global:insert=toggle_quick_terminal
+
+# Quake terminal
+quick-terminal-position = bottom
+quick-terminal-size = 100%
+quick-terminal-screen = main
+quick-terminal-space-behavior = move
+quick-terminal-animation-duration = 0
+quick-terminal-autohide = false
+
+# Fonts
+font-family = Fira Code
+font-size = 16
+
+# UI
+macos-titlebar-style = native
+macos-option-as-alt = true
+macos-hidden = always

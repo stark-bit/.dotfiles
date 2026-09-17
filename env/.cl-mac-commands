@@ -9,3 +9,4 @@ jira issue list -a"$(jira me)" -s~Done -s~"Closed not required" -s~"Closed - May
 cd "$(find . -type d | fzf)":::cd from local
 cd "$(find ~ -maxdepth 3 -type d | fzf)":::cd from home
 kill $(lsof -t -i :1355); npm run dev:worker-stack:inspect:::aidan kill restart
+find . -name node_modules | xargs rm -rf && npm install:::find all node_modules and remove
