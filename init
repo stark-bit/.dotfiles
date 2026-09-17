@@ -4,7 +4,11 @@ export DEV_ENV=$(pwd)
 source "$DEV_ENV/lib/detect_os_and_run"
 
 mac() {
-  curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  if ! grep -qxF "export DEV_ENV=\"$DEV_ENV\"" "$HOME/.zsh_profile" 2>/dev/null; then
+    printf '\nexport DEV_ENV="%s"\n' "$DEV_ENV" >> "$HOME/.zsh_profile"
+  fi
 }
 
 detect_os_and_run \

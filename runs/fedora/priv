@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if [[ ! -f "$HOME/.gitconfig_priv" || ! -f "$HOME/.zsh_priv" ]]; then
+  if [[ ! -f "$HOME/.gitconfig_priv" ]]; then
+    cat > "$HOME/.gitconfig_priv" <<'EOF'
+[user]
+  name =
+  email =
+  signingkey =
+EOF
+  fi
+
+  if [[ ! -f "$HOME/.zsh_priv" ]]; then
+    cat > "$HOME/.zsh_priv" <<'EOF'
+# Private shell settings
+EOF
+  fi
+fi
