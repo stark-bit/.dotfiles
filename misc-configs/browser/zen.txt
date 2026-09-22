@@ -1,0 +1,4 @@
+browser.tabs.insertAfterCurrent = true
+zen.window-sync.enabled = false
+zen.window-sync.sync-only-pinned-tabs = true
+
