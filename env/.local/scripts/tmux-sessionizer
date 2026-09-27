@@ -26,7 +26,8 @@ if [[ $# -eq 1 ]]; then
     selected=$1
 else
   selected=$(\
-        { find ~/github/personal ~/github ~/github/playground ~/github/learn ~/github/work ~/github/tools -mindepth 1 -maxdepth 1 -type d; echo ~/.dotfiles; echo ~/nvim; echo ~/.obsidian-settings; echo ~/.pi; echo ~/.agent; echo ~/.agents;} \
+        { find ~/github/personal ~/github ~/github/playground ~/github/learn ~/github/work ~/github/tools -mindepth 1 -maxdepth 1 -type d; echo ~/.dotfiles; echo ~/nvim; echo ~/.obsidian-settings; echo ~/.pi; echo ~/.agent; echo ~/.agents;
+          [ -f ~/.tmux-contexts ] && cat ~/.tmux-contexts; } \
         | fzf)
 fi
 

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Manage extra context dirs for tmux-sessionizer.
+# usage: context [dir]        add dir (defaults to current pane/PWD)
+#        context -l           list saved dirs
+#        context -r <dir>     remove a saved dir
+
+set -u
+
+file=${TMUX_CONTEXT_FILE:-$HOME/.tmux-contexts}
+
+list() {
+    [ -f "$file" ] && cat "$file"
+}
+
+add() {
+    local dir
+    dir=${1:-$(tmux display-message -p '#{pane_current_path}' 2>/dev/null || echo "$PWD")}
+    dir=$(realpath "$dir" 2>/dev/null) || { echo "no such directory: ${1:-$PWD}" >&2; exit 1; }
+    if [ ! -d "$dir" ]; then
+        echo "not a directory: $dir" >&2
+        exit 1
+    fi
+    if [ -f "$file" ] && grep -Fxq -- "$dir" "$file"; then
+        echo "already saved: $dir"
+    else
+        echo "$dir" >> "$file"
+        echo "saved: $dir"
+    fi
+}
+
+remove() {
+    local dir
+    dir=$(realpath "$1" 2>/dev/null) || { echo "no such directory: $1" >&2; exit 1; }
+    if [ ! -f "$file" ] || ! grep -Fxq -- "$dir" "$file"; then
+        echo "not saved: $dir" >&2
+        exit 1
+    fi
+    grep -Fvx -- "$dir" "$file" > "$file.tmp"
+    mv "$file.tmp" "$file"
+    echo "removed: $dir"
+}
+
+case "${1:-}" in
+    -l|--list) list ;;
+    -r|--remove) shift; remove "${1:-}" ;;
+    "") add ;;
+    -*) echo "usage: context [-l | -r <dir>] [dir]" >&2; exit 1 ;;
+    *) add "$1" ;;
+esac
