@@ -51,6 +51,10 @@ show_diff() {
         local src_size=$(wc -c < "$src")
         local tgt_size=$(wc -c < "$tgt")
         if (( src_size != tgt_size )); then
+            if [[ $summary_mode == "1" ]]; then
+                record_diff "$src" "$tgt"
+                return
+            fi
             local name=$(basename "$src")
             echo "###################################################"
             echo "######### $name"

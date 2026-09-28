@@ -40,15 +40,56 @@ fi
 source "$DEV_ENV/lib/log.sh"
 source "$DEV_ENV/lib/detect_os_and_run"
 
-# diff mode: show diffs only, then exit
+# diff mode: show summary and diffs
 if [[ $diff_mode == "1" ]]; then
+    summary_mode="0"
+    summary_paths=()
+    summary_added=()
+    summary_removed=()
+
+    short_path() {
+        local path="$1"
+        if [[ "$path" == "$HOME"/* ]]; then
+            echo "~${path#$HOME}"
+        else
+            echo "${path#$DEV_ENV/}"
+        fi
+    }
+
+    record_diff() {
+        local src="$1"
+        local tgt="$2"
+        local stats
+        stats=$(diff -U0 "$tgt" "$src" | awk '
+            /^\+[^+]/ { added++ }
+            /^-[^-]/ { removed++ }
+            END { print added + 0, removed + 0 }
+        ')
+        summary_paths+=("$(short_path "$tgt")")
+        summary_added+=("${stats%% *}")
+        summary_removed+=("${stats##* }")
+    }
+
+    record_new() {
+        local src="$1"
+        local tgt="$2"
+        summary_paths+=("$(short_path "$tgt")")
+        summary_added+=("$(wc -l < "$src")")
+        summary_removed+=("0")
+    }
+
+    record_orphan() {
+        local path="$1"
+        summary_paths+=("$(short_path "$path")")
+        summary_added+=("0")
+        summary_removed+=("$(wc -l < "$path")")
+    }
+
     diff_files() {
         local repo_dir="$1"
         local home_dir="$2"
 
         pushd "$repo_dir" &> /dev/null
-
-        # iterate top-level subdirs (mirrors update_files logic)
         local configs=$(find . -mindepth 1 -maxdepth 1 -type d)
         for c in $configs; do
             local repo_path="${repo_dir%/}/${c#./}"
@@ -58,19 +99,20 @@ if [[ $diff_mode == "1" ]]; then
                 continue
             fi
 
-            # content diffs for files tracked in repo
             find ./$c -type f | while read -r f; do
                 local rel="${f#./$c/}"
                 local repo_file="${repo_path%/}/$rel"
                 local home_file="${home_path%/}/$rel"
 
-                # detect files that exist in repo but not in home
                 if [[ ! -f "$home_file" ]]; then
-                    local short="~${home_file#$HOME}"
                     if [[ $direction == "pull" ]]; then
-                        echo "SKIP (no home file to pull): $short"
+                        if [[ $summary_mode == "0" ]]; then
+                            echo "SKIP (no home file to pull): ~${home_file#$HOME}"
+                        fi
+                    elif [[ $summary_mode == "1" ]]; then
+                        record_new "$repo_file" "$home_file"
                     else
-                        echo "NEW (will be CREATED on push): $short"
+                        echo "NEW (will be CREATED on push): ~${home_file#$HOME}"
                     fi
                     continue
                 fi
@@ -80,13 +122,11 @@ if [[ $diff_mode == "1" ]]; then
                 else
                     show_diff "$repo_file" "$home_file"
                 fi
-            done
+            done < <(find ./$c -type f)
 
-            # orphan detection: home files that don't exist in repo
-            # only relevant for push (push does rm -rf + cp -r per subdir)
             if [[ $direction == "push" ]]; then
                 pushd "$home_path" &> /dev/null
-                find . -type f -not -path "*/node_modules/*" | while read -r f; do
+                while read -r f; do
                     local rel="${f#./}"
                     local repo_file="${repo_path%/}/$rel"
                     local base=$(basename "$rel")
@@ -95,14 +135,16 @@ if [[ $diff_mode == "1" ]]; then
                     fi
                     if [[ ! -f "$repo_file" ]]; then
                         local home_file="${home_path%/}/$rel"
-                        local short="~${home_file#$HOME}"
-                        echo "ORPHAN (will be DELETED on push): $short"
+                        if [[ $summary_mode == "1" ]]; then
+                            record_orphan "$home_file"
+                        else
+                            echo "ORPHAN (will be DELETED on push): ~${home_file#$HOME}"
+                        fi
                     fi
-                done
+                done < <(find . -type f -not -path "*/node_modules/*")
                 popd &> /dev/null
             fi
         done
-
         popd &> /dev/null
     }
 
@@ -112,24 +154,43 @@ if [[ $diff_mode == "1" ]]; then
 
         if [[ $direction == "pull" ]]; then
             if [[ ! -f "$home_file" ]]; then
-                local short="~${home_file#$HOME}"
-                echo "SKIP (no home file to pull): $short"
+                if [[ $summary_mode == "0" ]]; then
+                    echo "SKIP (no home file to pull): ~${home_file#$HOME}"
+                fi
                 return
             fi
             show_diff "$home_file" "$repo_file"
         else
             if [[ ! -f "$home_file" ]]; then
-                local short="~${home_file#$HOME}"
-                echo "NEW (will be CREATED on push): $short"
+                if [[ $summary_mode == "1" ]]; then
+                    record_new "$repo_file" "$home_file"
+                else
+                    echo "NEW (will be CREATED on push): ~${home_file#$HOME}"
+                fi
                 return
             fi
             show_diff "$repo_file" "$home_file"
         fi
     }
 
+    summary_mode="1"
     diff_files "$DEV_ENV/env/.config" "$XDG_CONFIG_HOME"
     diff_files "$DEV_ENV/env/.local" "$HOME/.local"
+    diff_file "$DEV_ENV/env/.zsh_profile" "$HOME/.zsh_profile"
+    diff_file "$DEV_ENV/env/.zshrc" "$HOME/.zshrc"
+    diff_file "$DEV_ENV/env/.vimrc" "$HOME/.vimrc"
+    diff_file "$DEV_ENV/env/.gitconfig" "$HOME/.gitconfig"
+    diff_file "$DEV_ENV/env/.tmux.conf" "$HOME/.tmux.conf"
 
+    echo "Files affected: ${#summary_paths[@]}"
+    for i in "${!summary_paths[@]}"; do
+        echo "  ${summary_paths[$i]} (+${summary_added[$i]}/-${summary_removed[$i]} lines)"
+    done
+    echo ""
+
+    summary_mode="0"
+    diff_files "$DEV_ENV/env/.config" "$XDG_CONFIG_HOME"
+    diff_files "$DEV_ENV/env/.local" "$HOME/.local"
     diff_file "$DEV_ENV/env/.zsh_profile" "$HOME/.zsh_profile"
     diff_file "$DEV_ENV/env/.zshrc" "$HOME/.zshrc"
     diff_file "$DEV_ENV/env/.vimrc" "$HOME/.vimrc"
