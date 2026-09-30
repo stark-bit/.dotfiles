@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null || printf '%s\n' repo)
+repo_name=${repo_root##*/}
+repo_name=${repo_name#.}
+
+exec tmux new-session -A -s "$repo_name-modal"
