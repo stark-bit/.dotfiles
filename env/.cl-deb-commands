@@ -2,3 +2,4 @@ sudo lsof -iTCP -sTCP:LISTEN -P -n | awk 'NR>1 {split($9,a,":"); print $1, a[len
 docker stats --no-stream  --format "table {{.Name}}t{{.Container}}t{{.CPUPerc}}t{{.MemUsage}}" | sort -k 4 -h:::Docker stats by memory
 journalctl -f:::tail journal
 openssl rand -base64 32:::generate base64 crypto key
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent:::install pi
