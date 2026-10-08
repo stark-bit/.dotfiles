@@ -1,6 +1,27 @@
 #!/usr/bin/env bash
 
-window_mode=${TMUX_PROJECT_WINDOW:-false}
+window_mode=false
+selected=
+
+case "$1" in
+    --window|--replace)
+        window_mode=true
+        shift
+        ;;
+    --session)
+        shift
+        ;;
+    "")
+        ;;
+    *)
+        if [[ $# -eq 1 ]]; then
+            selected=$1
+        else
+            printf 'Usage: tmux-sessionizer [mode] [directory]\n' >&2
+            exit 2
+        fi
+        ;;
+esac
 
 switch_to() {
     if [[ -z $TMUX ]]; then
@@ -22,9 +43,7 @@ hydrate() {
     fi
 }
 
-if [[ $# -eq 1 ]]; then
-    selected=$1
-else
+if [[ -z $selected ]]; then
   selected=$(\
         { find ~/github/personal ~/github ~/github/playground ~/github/learn ~/github/work ~/github/tools -mindepth 1 -maxdepth 1 -type d; echo ~/.dotfiles; echo ~/nvim; echo ~/.obsidian-settings; echo ~/.pi; echo ~/.agent; echo ~/.agents;
           [ -f ~/.tmux-contexts ] && cat ~/.tmux-contexts; } \
@@ -40,7 +59,8 @@ fi
 selected_name=$(basename "$selected" | tr . _)
 
 if $window_mode; then
-    tmux rename-window -t "$TMUX_PANE" "$(basename "$selected")"
+    pane_target=${TMUX_PANE:-$(tmux display-message -p '#{pane_id}')}
+    tmux rename-window -t "$pane_target" "$(basename "$selected")"
     cd "$selected" || exit 1
 
     if [[ -f .tmux-sessionizer ]]; then
