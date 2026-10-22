@@ -12,14 +12,6 @@ source $ZSH/oh-my-zsh.sh
 source ~/.zsh_profile
 source ~/.zsh_priv
 
-# pnpm
-export PNPM_HOME="/Users/iv0700/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
-# pnpm end
-
 cap() { CI=1 "$@" < /dev/null 2>&1 | tee out.log; }
 
 # wrapper for fzf cd commands
@@ -28,11 +20,6 @@ cl() {
 }
 eval "$(mise activate zsh)"
 
-# lean-ctx shell hook — begin
-if [ -f "/Users/iv0700/.config/lean-ctx/shell-hook.zsh" ]; then
-. "/Users/iv0700/.config/lean-ctx/shell-hook.zsh"
-fi
-# lean-ctx shell hook — end
 
 
 
