@@ -42,10 +42,21 @@ source "$DEV_ENV/lib/detect_os_and_run"
 
 # diff mode: show summary and diffs
 if [[ $diff_mode == "1" ]]; then
-    summary_mode="0"
+    summary_mode="1"
     summary_paths=()
     summary_added=()
     summary_removed=()
+    summary_kinds=()
+    summary_diffs=()
+
+    tmpdir=$(mktemp -d)
+    trap 'rm -rf "$tmpdir"' EXIT
+    n=0
+
+    RESET=$'\e[0m'; BOLD=$'\e[1m'; DIM=$'\e[2m'
+    CYAN=$'\e[38;5;110m'; GREEN=$'\e[38;5;158m'; RED=$'\e[38;5;203m'
+    YELLOW=$'\e[38;5;220m'; GREY=$'\e[38;5;245m'; WHITE=$'\e[38;5;188m'
+    BLUE=$'\e[38;5;111m'
 
     short_path() {
         local path="$1"
@@ -59,15 +70,20 @@ if [[ $diff_mode == "1" ]]; then
     record_diff() {
         local src="$1"
         local tgt="$2"
-        local stats
-        stats=$(diff -U0 "$tgt" "$src" | awk '
+        local d stats
+        d=$(diff -U0 "$tgt" "$src")
+        stats=$(awk '
             /^\+[^+]/ { added++ }
             /^-[^-]/ { removed++ }
             END { print added + 0, removed + 0 }
-        ')
+        ' <<< "$d")
+        n=$((n + 1))
+        printf '%s\n' "$d" > "$tmpdir/diff.$n"
         summary_paths+=("$(short_path "$tgt")")
         summary_added+=("${stats%% *}")
         summary_removed+=("${stats##* }")
+        summary_kinds+=("changed")
+        summary_diffs+=("$tmpdir/diff.$n")
     }
 
     record_new() {
@@ -76,6 +92,8 @@ if [[ $diff_mode == "1" ]]; then
         summary_paths+=("$(short_path "$tgt")")
         summary_added+=("$(wc -l < "$src")")
         summary_removed+=("0")
+        summary_kinds+=("new")
+        summary_diffs+=("")
     }
 
     record_orphan() {
@@ -83,6 +101,8 @@ if [[ $diff_mode == "1" ]]; then
         summary_paths+=("$(short_path "$path")")
         summary_added+=("0")
         summary_removed+=("$(wc -l < "$path")")
+        summary_kinds+=("orphan")
+        summary_diffs+=("")
     }
 
     diff_files() {
@@ -99,7 +119,8 @@ if [[ $diff_mode == "1" ]]; then
                 continue
             fi
 
-            find ./$c -type f | while read -r f; do
+            # push: read via process substitution so arrays persist
+            while read -r f; do
                 local rel="${f#./$c/}"
                 local repo_file="${repo_path%/}/$rel"
                 local home_file="${home_path%/}/$rel"
@@ -182,20 +203,87 @@ if [[ $diff_mode == "1" ]]; then
     diff_file "$DEV_ENV/env/.gitconfig" "$HOME/.gitconfig"
     diff_file "$DEV_ENV/env/.tmux.conf" "$HOME/.tmux.conf"
 
-    echo "Files affected: ${#summary_paths[@]}"
-    for i in "${!summary_paths[@]}"; do
-        echo "  ${summary_paths[$i]} (+${summary_added[$i]}/-${summary_removed[$i]} lines)"
+    # render -----------------------------------------------------------------
+
+    total=${#summary_paths[@]}
+    orphans=0; changed=0; new=0
+    for k in "${summary_kinds[@]}"; do
+        case "$k" in
+            orphan) orphans=$((orphans + 1)) ;;
+            changed) changed=$((changed + 1)) ;;
+            new) new=$((new + 1)) ;;
+        esac
     done
+
+    echo ""
+    echo "${BOLD}${CYAN}● dev-env${RESET} ${DIM}push preview (dry-run)${RESET}"
+    echo "${DIM}─────────────────────────────────────────────────${RESET}"
+
+    if [[ $total == 0 ]]; then
+        echo ""
+        echo "  ${GREEN}✓${RESET} everything in sync"
+        echo ""
+        exit 0
+    fi
+
+    maxpath=0
+    for p in "${summary_paths[@]}"; do
+        l=${#p}
+        (( l > maxpath )) && maxpath=$l
+    done
+    (( maxpath < 20 )) && maxpath=20
+
+    echo ""
+    echo "  ${BOLD}${WHITE}summary${RESET} ${GREY}· ${total} files · ${changed} changed · ${new} new · ${orphans} orphan${RESET}"
     echo ""
 
-    summary_mode="0"
-    diff_files "$DEV_ENV/env/.config" "$XDG_CONFIG_HOME"
-    diff_files "$DEV_ENV/env/.local" "$HOME/.local"
-    diff_file "$DEV_ENV/env/.zsh_profile" "$HOME/.zsh_profile"
-    diff_file "$DEV_ENV/env/.zshrc" "$HOME/.zshrc"
-    diff_file "$DEV_ENV/env/.vimrc" "$HOME/.vimrc"
-    diff_file "$DEV_ENV/env/.gitconfig" "$HOME/.gitconfig"
-    diff_file "$DEV_ENV/env/.tmux.conf" "$HOME/.tmux.conf"
+    order=()
+    for i in "${!summary_paths[@]}"; do [[ "${summary_kinds[$i]}" == changed ]] && order+=("$i"); done
+    for i in "${!summary_paths[@]}"; do [[ "${summary_kinds[$i]}" == new     ]] && order+=("$i"); done
+    for i in "${!summary_paths[@]}"; do [[ "${summary_kinds[$i]}" == orphan  ]] && order+=("$i"); done
+
+    for i in "${order[@]}"; do
+        k="${summary_kinds[$i]}"
+        p="${summary_paths[$i]}"
+        a="${summary_added[$i]}"; r="${summary_removed[$i]}"
+        case "$k" in
+            changed) tag="${YELLOW} ~ changed ${RESET}"; stat="${GREEN}+${a}${RESET} ${RED}−${r}${RESET}" ;;
+            new)     tag="${GREEN} + new     ${RESET}"; stat="${GREEN}+${a}${RESET} ${RED}−0${RESET}" ;;
+            orphan)  tag="${RED} ✗ orphan  ${RESET}"; stat="${RED}−${r} lines${RESET}" ;;
+        esac
+        printf '  %s %s%-*s%s  %s\n' "$tag" "${BOLD}" "$maxpath" "$p" "${RESET}" "$stat"
+    done
+
+    echo ""
+    echo "${DIM}─────────────────────────────────────────────────${RESET}"
+
+    for i in "${order[@]}"; do
+        if [[ "${summary_kinds[$i]}" == "changed" ]]; then
+            echo ""
+            echo "${BOLD}${WHITE}${summary_paths[$i]}${RESET}"
+            echo "${DIM}      ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄${RESET}"
+            while IFS= read -r line; do
+                case "$line" in
+                    ---*|+++*) ;;
+                    @@*)  echo "  ${BLUE}${line}${RESET}" ;;
+                    +*)   echo "  ${GREEN}${line}${RESET}" ;;
+                    -*)   echo "  ${RED}${line}${RESET}" ;;
+                    *)    echo "  ${DIM}${line}${RESET}" ;;
+                esac
+            done < "${summary_diffs[$i]}"
+        fi
+    done
+
+    apply_hint="dev-env -f"
+    if [[ $direction == "pull" ]]; then
+        apply_hint="dev-env -f pull"
+    fi
+    echo ""
+    if [[ $orphans -gt 0 ]]; then
+        echo "  ${BOLD}${RED}⚠ ${orphans} orphan${RESET} ${DIM}— would be deleted on push; move them into env/ or remove them first${RESET}"
+    fi
+    echo "  ${DIM}apply with: ${apply_hint}${RESET}"
+    echo ""
 
     exit 0
 fi
