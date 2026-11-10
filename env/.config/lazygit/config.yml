@@ -1,8 +1,8 @@
 git:
   diffRenderers:
-    - colorArg: never
-      command: delta --dark --paging=never
-      useConfig: false
+    - command: delta --dark --paging=never --side-by-side
+    - name: delta (inline)
+      command: delta --dark --paging=never --no-gitconfig
 gui:
   # DRACULA
   theme:
