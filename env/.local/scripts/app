@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# app - launch any AppImage, detached, or install a named wrapper
+set -euo pipefail
+
+BIN_DIR="$HOME/.local/scripts"
+LAUNCHER="$BIN_DIR/app"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/app"
+
+usage() {
+	echo "usage:"
+	echo "  app [--fg] /path/to/App.AppImage [args...]    run once"
+	echo "  app -l | --list                               running AppImages"
+	echo "  app --install name /path/App.AppImage         create 'name' command"
+	echo "  app --remove name"
+	exit 1
+}
+
+record_pid() {
+	mkdir -p "$STATE_DIR"
+	echo "$app" >"$STATE_DIR/$1.pid"
+}
+
+list_running() {
+	local found=0
+	printf "%-8s %-10s %-6s %-6s %s\n" PID ELAPSED CPU% MEM% APP
+	for pidfile in "$STATE_DIR"/*.pid; do
+		[ -f "$pidfile" ] || return 0
+		pid="${pidfile##*/}"
+		pid="${pid%.pid}"
+		app="$(cat "$pidfile")"
+		if ! kill -0 "$pid" 2>/dev/null; then
+			rm -f "$pidfile"
+			continue
+		fi
+		found=1
+		ps -o etime=,%cpu=,%mem=,args= -p "$pid" |
+			awk -v p="$pid" -v a="$app" '{printf "%-8s %-10s %-6s %-6s %s\n", p, $1, $2, $3, a " " substr($0, index($0, $4))}'
+	done
+	[ "$found" -eq 1 ] || echo "nothing running"
+}
+
+[ $# -ge 1 ] || usage
+
+detach=1
+case "$1" in
+	--fg)
+		detach=0
+		shift
+		[ $# -ge 1 ] || usage
+		;;
+esac
+
+case "${1:-}" in
+	-l | --list | -t | --top)
+		mkdir -p "$STATE_DIR"
+		list_running
+		;;
+	--install)
+		[ $# -eq 3 ] || usage
+		name="$2" app="$(realpath "$3")"
+		[ -f "$app" ] || { echo "not found: $app"; exit 1; }
+		mkdir -p "$BIN_DIR"
+		cat >"$BIN_DIR/$name" <<EOF
+#!/usr/bin/env bash
+exec "$LAUNCHER" "$app" "\$@"
+EOF
+		chmod +x "$BIN_DIR/$name"
+		echo "installed: $BIN_DIR/$name"
+		;;
+	--remove)
+		[ $# -eq 2 ] || usage
+		rm -f "$BIN_DIR/$2"
+		;;
+	-*)
+		usage
+		;;
+	*)
+		app="$1"
+		shift
+		[ -f "$app" ] || { echo "not found: $app"; exit 1; }
+		chmod +x "$app" 2>/dev/null || true
+		if [ "$detach" -eq 1 ]; then
+			setsid "$app" --no-sandbox "$@" </dev/null >/dev/null 2>&1 &
+			record_pid "$!"
+		else
+			exec "$app" --no-sandbox "$@"
+		fi
+		;;
+esac
