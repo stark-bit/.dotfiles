@@ -8,7 +8,7 @@ quick-terminal-size = 100%
 quick-terminal-screen = main
 quick-terminal-space-behavior = move
 quick-terminal-animation-duration = 0
-quick-terminal-autohide = false
+quick-terminal-autohide = true
 
 # Fonts
 font-family = Fira Code
